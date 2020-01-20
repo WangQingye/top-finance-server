@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-01-15 16:11:14
- * @LastEditTime : 2020-01-16 16:22:42
+ * @LastEditTime : 2020-01-20 11:40:57
  * @LastEditors  : Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \topfinance-server\controller\record.js
@@ -25,7 +25,8 @@ class recordManager {
      * @return: 财务记录list
      */
     static async getRecord(ctx, next) {
-        const d = ctx.request.body;
+        const d = ctx.query;
+        d.date = JSON.parse(d.date);
         // 搜索条件
         let search = {
             "timeStamp": {
@@ -34,7 +35,7 @@ class recordManager {
             },
             "isDelete": 0
         };
-        if (d.typeId !== null) search.typeId = d.typeId;
+        if (d.typeId != 'null') search.typeId = d.typeId;
         // 第二个参数options隐藏了一些前端不必要的字段
         ctx.body = await Record.find(search, {
             isDelete: 0,
@@ -42,7 +43,7 @@ class recordManager {
             timeStamp: 0
         }).sort({
             timeStamp: -1
-        }).skip((d.page - 1) * d.pageLimit).limit(d.pageLimit);
+        }).skip((d.page - 1) * d.pageLimit).limit(Number(d.pageLimit));
     }
     static async delRecord(ctx, next) {
         const d = ctx.request.body;

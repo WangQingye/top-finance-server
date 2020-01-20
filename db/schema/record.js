@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-01-15 16:17:54
- * @LastEditTime : 2020-01-16 15:59:47
+ * @LastEditTime : 2020-01-20 13:53:51
  * @LastEditors  : Please set LastEditors
  * @Description: In User Settings Edits
  * @FilePath: \topfinance-server\db\schema\record.js
@@ -26,7 +26,8 @@ var recordSchema = new Schema({
     timeStamp: String,
     // 账目的入库日期
     createdAt: {
-        type: Date,
+        type: Number,
+        // default 有一个大坑是不会改变，所以必须加pre的钩子，不然这个date.now会一直是服务启动的时间
         default: Date.now()
     },
     // 是否被删除（为了不做物理删除）
@@ -35,4 +36,8 @@ var recordSchema = new Schema({
         default: 0
     }
 });
+recordSchema.pre('save', function (next) {
+    this.createdAt = Date.now()
+    next()
+})
 mongoose.model('Record', recordSchema)

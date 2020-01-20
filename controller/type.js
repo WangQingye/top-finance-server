@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-01-15 16:11:19
- * @LastEditTime : 2020-01-16 17:26:53
+ * @LastEditTime : 2020-01-20 16:50:58
  * @LastEditors  : Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \topfinance-server\controller\type.js
@@ -9,7 +9,6 @@
 const mongoose = require('mongoose')
 const Type = mongoose.model('Type');
 const Record = mongoose.model('Record');
-const recordManager = require('./record')
 
 class typeManager {
     static async addType(ctx, next) {
@@ -40,20 +39,35 @@ class typeManager {
     }
     static async delType(ctx, next) {
         const d = ctx.request.body;
-        console.log(d);
-        ctx.body = await Type.findOneAndRemove({
-            typeId: d.typeId
+        const had = await Record.findOne({
+            typeId: d.typeId,
+            isDelete: 0
         })
+        if (had) {
+            ctx.body = {
+                msg: '有账目的分类不能删除'
+            }
+        } else {
+            ctx.body = await Type.findOneAndRemove({
+                typeId: d.typeId
+            })
+        }
     }
     static async getType(ctx, next) {
-        ctx.body = await Type.find()
-    }
-    static async getTypeStatistic(ctx, next) {
-        const d = ctx.request.body;
-        let types = await Type.find({},{
+        ctx.body = await Type.find({}, {
             _id: 0,
             __v: 0
-        },{lean: true});
+        })
+    }
+    static async getTypeStatistic(ctx, next) {
+        const d = ctx.query;
+        d.date = JSON.parse(d.date);
+        let types = await Type.find({}, {
+            _id: 0,
+            __v: 0
+        }, {
+            lean: true
+        });
         types = types.slice();
         let search = {
             "timeStamp": {
@@ -89,6 +103,11 @@ class typeManager {
         types.forEach(item => {
             if (item.outMoney) item.outPercent = (item.outMoney / allOutMoney).toFixed(4) * 100;
             if (item.inMoney) item.inPercent = (item.inMoney / allInMoney).toFixed(4) * 100;
+            // 补齐一下数据格式，免得前端处理麻烦
+            if (!item.outMoney) item.outMoney = 0;
+            if (!item.inMoney) item.inMoney = 0;
+            if (!item.inPercent) item.inPercent = 0;
+            if (!item.outPercent) item.outPercent = 0;
         })
         let data = {
             allOutMoney,
