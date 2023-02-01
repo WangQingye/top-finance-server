@@ -15,6 +15,6 @@
     "koa-router": "^7.4.0",
     "koa2-cors": "^2.0.6",
     "koa2-formidable": "^1.0.2",
-    "mongoose": "^5.8.7"
+    "mongoose": "^5.13.15"
   }
 }
